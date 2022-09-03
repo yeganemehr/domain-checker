@@ -1,0 +1,63 @@
+name: Make Docker Image
+on:
+  push:
+    branches:
+      - 'master'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'master'
+  workflow_dispatch:
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata for frontend
+        id: frontend-end-meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ghcr.io/${{ github.repository }}/frontend
+      
+      - name: Extract Docker metadata for backend
+        id: backend-end-meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ghcr.io/${{ github.repository }}/backend
+
+      - name: Build and push Frontend
+        uses: docker/build-push-action@v2
+        with:
+          context: ./frontend
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.frontend-end-meta.outputs.tags }}
+          labels: ${{ steps.frontend-end-meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ fromJSON(steps.frontend-end-meta.outputs.json).tags[0] }}
+          cache-to: type=inline
+
+      - name: Build and push Backend
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.backend-end-meta.outputs.tags }}
+          labels: ${{ steps.backend-end-meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ fromJSON(steps.backend-end-meta.outputs.json).tags[0] }}
+          cache-to: type=inline

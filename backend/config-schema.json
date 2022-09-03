@@ -1,0 +1,80 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"properties": {
+		"server": {
+			"type": "object",
+			"properties": {
+				"port": {
+					"type": "integer"
+				},
+				"host": {
+					"type": "string"
+				},
+				"cache": {
+					"type": "boolean"
+				}
+			},
+			"required": [
+				"port"
+			]
+		},
+		"logging": {
+			"type": "object",
+			"properties": {
+				"file": {
+					"type": "string"
+				},
+				"console": {
+					"type": "boolean"
+				},
+				"level": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"level"
+			]
+		},
+		"database": {
+			"type": "object",
+			"properties": {
+				"path": {
+					"type": "string"
+				}
+			},
+			"required": ["path"]
+		},
+		"rdap": {
+			"type": "object",
+			"properties": {
+				"tlds": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				}
+			},
+			"required": ["tlds"]
+		},
+		"whois": {
+			"type": "object",
+			"properties": {
+				"tlds": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				}
+			},
+			"required": ["tlds"]
+		}
+	},
+	"required": [
+		"server",
+		"logging",
+		"database",
+		"rdap",
+		"whois"
+	]
+}

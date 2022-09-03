@@ -1,0 +1,31 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ES2020",
+		"lib": ["ESNext"],
+		"moduleResolution": "node",
+		"rootDir": "src",
+		"outDir": "dist",
+		"emitDecoratorMetadata": true,
+		"esModuleInterop": true,
+		"strict": true,
+		"allowSyntheticDefaultImports": true,
+		"importHelpers": true,
+		"alwaysStrict": true,
+		"sourceMap": true,
+		"forceConsistentCasingInFileNames": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitAny": true,
+		"noImplicitThis": true,
+		"strictNullChecks": true,
+		"experimentalDecorators": true,
+		"allowJs": true,
+		"skipLibCheck": true
+	},
+	"include": [
+		"src/**/*",
+	]
+}
