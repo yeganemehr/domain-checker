@@ -66,7 +66,7 @@ export default class ScanController {
 			newState.checks = state.checks;
 		}
 		this.database.setScanState(newState);
-		this.scanner.start();
+		setTimeout(() => this.scanner.start(), 1000); // Make time for cancel
 		const exportState = this.exportState(newState);
 		res.json(exportState);
 		const httpServer = container.resolve<HttpServer>("HttpServer");
