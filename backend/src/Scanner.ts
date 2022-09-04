@@ -74,46 +74,45 @@ export default class Scanner {
 		}
 		this.queues[tld].enqueue(new CheckDomainWork(domain)).then((result) => {
 			this.updateDomainStatus(domain, result.available ? DomainScanStatus.AVAILABLE : DomainScanStatus.TAKEN);
-			this.checkForEnd();
 		}).catch((e) => {
 			if (typeof e === "string" && e === "canceled") {
 				return;
 			}
 			this.logger.error("Error during check domain", {domain, e:e.toString()});
 			this.updateDomainStatus(domain, DomainScanStatus.TAKEN);
-			this.checkForEnd();
 		});
 	}
 
 	private checkForEnd() {
+		let allIddle = true;
 		for (const name in this.queues) {
-			if (this.queues[name].isIddle()) {
-				delete this.queues[name];
+			if (!this.queues[name].isIddle()) {
+				allIddle = false;
+				break;
 			}
 		}
-		if (Object.keys(this.queues).length === 0) {
-			const state = this.database.getScanState();
-			if (state.running === true) {
-				state.running = false;
-				this.database.setScanState(state);
-				const httpServer = container.resolve<HttpServer>("HttpServer");
-				httpServer.socket.emit("scan.state", { running: false });
-			}
+		if (!allIddle) {
+			return;
 		}
+		const state = this.database.getScanState();
+		state.running = false;
+		this.database.setScanState(state);
+		const httpServer = container.resolve<HttpServer>("HttpServer");
+		httpServer.socket.emit("scan.state", { running: false });
 	}
 
 	private setupTldQueue(tld: string): void {
 		const queue = new WorkQueue();
-		if (tld === "ir") {
-			queue.setMaxRunning(1);
-		} else {
-			queue.setMaxRunning(8);
-		}
+		queue.setMaxRunning(8);
 		queue.on("started", (check: Work) => {
 			if (!(check instanceof CheckDomainWork)) {
 				return;
 			}
 			this.updateDomainStatus(check.domain, DomainScanStatus.RUNNING);
+		});
+		queue.once("idle", () => {
+			delete this.queues[tld];
+			this.checkForEnd();
 		});
 		this.queues[tld] = queue;
 	}
