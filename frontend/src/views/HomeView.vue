@@ -233,7 +233,7 @@ export default defineComponent({
         this.patternError = "Invalid Pattern";
         return;
       }
-
+      console.log("regex", regex);
       const expander = expand(regex);
       this.count = expander.count;
 
@@ -250,6 +250,7 @@ export default defineComponent({
           this.examples.push(domain);
         } else {
           this.examples.unshift(domain);
+          console.log("bad-domain", domain);
           badDomains++;
           if (badDomains >= maxExamples) {
             break;
@@ -277,8 +278,8 @@ export default defineComponent({
       } else {
         pattern = pattern
           .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
-          .replace(/\*\./g, "[a-z0-9].")
-          .replace(/\.\*/g, ".[a-z0-9]")
+          .replace(/\*\\\./g, "[a-z0-9]\\.")
+          .replace(/\\\.\*/g, "\\.[a-z0-9]")
           .replace(/\*-/g, "[a-z0-9]-")
           .replace(/-\*/g, "-[a-z0-9]")
           .replace(/^\*/g, "[a-z0-9]")

@@ -5,8 +5,8 @@ export function convertPatternToRegex(pattern: string, isRegex: boolean): RegExp
 	} else {
 		pattern = pattern
 			.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
-			.replace(/\*\./g, "[a-z0-9].")
-			.replace(/\.\*/g, ".[a-z0-9]")
+			.replace(/\*\\\./g, "[a-z0-9]\\.")
+			.replace(/\\\.\*/g, "\\.[a-z0-9]")
 			.replace(/\*-/g, "[a-z0-9]-")
 			.replace(/-\*/g, "-[a-z0-9]")
 			.replace(/^\*/g, "[a-z0-9]")
