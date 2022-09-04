@@ -5,6 +5,12 @@ export function convertPatternToRegex(pattern: string, isRegex: boolean): RegExp
 	} else {
 		pattern = pattern
 			.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+			.replace(/\*\./g, "[a-z0-9].")
+			.replace(/\.\*/g, ".[a-z0-9]")
+			.replace(/\*-/g, "[a-z0-9]-")
+			.replace(/-\*/g, "-[a-z0-9]")
+			.replace(/^\*/g, "[a-z0-9]")
+			.replace(/\*$/g, "[a-z0-9]")
 			.replace(/\*/g, "[a-z0-9-]")
 			.replace(/%d/g, "[0-9]")
 			.replace(/%w/g, "[a-z]")
@@ -15,6 +21,6 @@ export function convertPatternToRegex(pattern: string, isRegex: boolean): RegExp
 }
 
 export function isValidDomain(domain: string): boolean {
-	const regex = /^(?:[a-z0-9\-]{2,63}\.)+[a-z0-9\-]{2,63}$/;
+	const regex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
 	return regex.test(domain);
 }
