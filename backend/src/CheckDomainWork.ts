@@ -6,6 +6,7 @@ import net, { Socket } from "net";
 import { SocksClient } from 'socks';
 import ProxyListDownload from "./ProxyListDownload";
 import { SocksProxyType } from "socks/typings/common/constants";
+import {Resolver} from "dns/promises";
 
 export interface IResult {
 	available: boolean;
@@ -36,13 +37,43 @@ export default class CheckDomainWork extends Work {
 				available: false
 			};
 		}
-		const result = await this.whoisDomain(this.domain);
-		if (tld === "ir") {
-			return {
-				available: result.includes("no entries found")
-			};
+		const dnsCheck = await this.checkViaDNS(this.domain);
+		if (dnsCheck) {
+			try {
+				const result = await this.whoisDomain(this.domain);
+				if (tld === "ir") {
+					return {
+						available: result.includes("no entries found")
+					};
+				}
+			} catch (e) {
+			}
 		}
-		throw new Error("unsupported tld: " + tld);
+		return {
+			available: dnsCheck
+		};
+	}
+
+	private async checkViaDNS(domain: string): Promise<boolean> {
+		const resolver = new Resolver();
+		if (domain.endsWith(".ir")) {
+			resolver.setServers([
+				"193.171.255.77",
+				"193.189.123.2",
+				"193.0.9.85",
+				"193.189.122.83",
+				"78.104.145.5",
+			]);
+		}
+		try {
+			const ns = await resolver.resolveNs(domain);
+			return ns.length === 0;
+		} catch (e) {
+			if (e instanceof Error && e.hasOwnProperty("code") && (e as any).code === "ENOTFOUND") {
+				return true;
+			}
+			throw e;
+		}
 	}
 
 	public getRdapURL(tld: string): string | undefined {
