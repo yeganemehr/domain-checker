@@ -167,7 +167,8 @@ export default defineComponent({
     async onActionBtnClick() {
       this.actionRunning = true;
       try {
-        const response = await fetch(`${process.env.VUE_APP_SERVER_URL || ""}/api/v1/scan/${this.running ? "stop" : "start"}`, {
+        const isStart = !this.running;
+        const response = await fetch(`${process.env.VUE_APP_SERVER_URL || ""}/api/v1/scan/${isStart ? "start" : "stop"}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -180,6 +181,10 @@ export default defineComponent({
         const data: IServerScanStatusResponse = await response.json();
         if (response.status !== 200) {
           throw new Error();
+        }
+        if (isStart) {
+          this.checks = {};
+          this.running = true;
         }
       } finally {
         this.actionRunning = false;
@@ -272,6 +277,12 @@ export default defineComponent({
       } else {
         pattern = pattern
           .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+          .replace(/\*\./g, "[a-z0-9].")
+          .replace(/\.\*/g, ".[a-z0-9]")
+          .replace(/\*-/g, "[a-z0-9]-")
+          .replace(/-\*/g, "-[a-z0-9]")
+          .replace(/^\*/g, "[a-z0-9]")
+          .replace(/\*$/g, "[a-z0-9]")
           .replace(/\*/g, "[a-z0-9-]")
           .replace(/%d/g, "[0-9]")
           .replace(/%w/g, "[a-z]")
@@ -330,7 +341,7 @@ export default defineComponent({
       }
     },
     isValidDomain(domain: string): boolean {
-      const regex = /^(?:[a-z0-9-]{2,63}\.)+[a-z0-9-]{2,63}$/;
+      const regex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
       return regex.test(domain);
     }
   },
